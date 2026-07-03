@@ -1,0 +1,14 @@
+{
+  "name": "@stellar-trust-circles/cli",
+  "version": "0.1.0",
+  "description": "CLI tool for Stellar Trust Circles",
+  "main": "dist/index.js",
+  "bin": {
+    "trust-circle": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "license": "MIT"
+}
