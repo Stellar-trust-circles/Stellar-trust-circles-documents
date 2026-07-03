@@ -1,0 +1,8 @@
+{
+  "name": "@stellar-trust-circles/types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types for Stellar Trust Circles SDKs",
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "MIT"
+}
