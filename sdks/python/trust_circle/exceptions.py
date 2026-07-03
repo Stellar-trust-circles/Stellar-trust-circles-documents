@@ -1,0 +1,43 @@
+"""Exceptions for Trust Circles SDK."""
+
+from enum import Enum
+
+
+class ErrorCode(Enum):
+    """Contract error codes."""
+
+    EMPTY_MEMBERS = "EMPTY_MEMBERS"
+    DUPLICATE_MEMBERS = "DUPLICATE_MEMBERS"
+    INVALID_AMOUNT = "INVALID_AMOUNT"
+    INVALID_CYCLE_LENGTH = "INVALID_CYCLE_LENGTH"
+    NOT_MEMBER = "NOT_MEMBER"
+    CIRCLE_INACTIVE = "CIRCLE_INACTIVE"
+    ALREADY_CONTRIBUTED = "ALREADY_CONTRIBUTED"
+    CYCLE_CLOSED = "CYCLE_CLOSED"
+    TRANSFER_FAILED = "TRANSFER_FAILED"
+    NOT_AUTHORIZED = "NOT_AUTHORIZED"
+    CYCLE_NOT_ENDED = "CYCLE_NOT_ENDED"
+    CIRCLE_ACTIVE = "CIRCLE_ACTIVE"
+    NOT_ADMIN = "NOT_ADMIN"
+    INSUFFICIENT_REPUTATION = "INSUFFICIENT_REPUTATION"
+    MAX_VOUCHES_REACHED = "MAX_VOUCHES_REACHED"
+    ALREADY_VOUCHED = "ALREADY_VOUCHED"
+    CANNOT_VOUCH_SELF = "CANNOT_VOUCH_SELF"
+    INVALID_PROPOSAL_TYPE = "INVALID_PROPOSAL_TYPE"
+    DUPLICATE_PROPOSAL = "DUPLICATE_PROPOSAL"
+    ALREADY_VOTED = "ALREADY_VOTED"
+    VOTING_CLOSED = "VOTING_CLOSED"
+    PROPOSAL_NOT_FOUND = "PROPOSAL_NOT_FOUND"
+    VOTING_STILL_OPEN = "VOTING_STILL_OPEN"
+    NOT_PASSED = "NOT_PASSED"
+    ALREADY_EXECUTED = "ALREADY_EXECUTED"
+
+
+class TrustCircleError(Exception):
+    """Error from Trust Circle contract or SDK."""
+
+    def __init__(self, code: ErrorCode, message: str, details: object = None):
+        self.code = code
+        self.message = message
+        self.details = details
+        super().__init__(f"[{code.value}] {message}")
