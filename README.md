@@ -1,251 +1,413 @@
-# Trust Circle — Smart Contracts
+cat > /mnt/user-data/outputs/documents-README.md << 'ENDOFFILE'
+<div align="center">
 
-> Soroban smart contracts powering the Stellar Trust Circles platform — a decentralized rotating savings group protocol built on Stellar.
+# Trust Circles — Documents
+
+**Documentation, SDKs, CLI tool, and code examples for the Stellar Trust Circles protocol**
+
+*Everything you need to integrate with, build on top of, or understand Trust Circles*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Built on Stellar](https://img.shields.io/badge/Built%20on-Stellar-7C3AED)](https://stellar.org)
-[![Soroban](https://img.shields.io/badge/Soroban-Smart%20Contracts-0F6E56)](https://soroban.stellar.org)
-[![Testnet](https://img.shields.io/badge/Deployed-Testnet-854F0B)](https://testnet.stellar.expert/explorer/testnet/contract/CANM5X47IG3AM5JDG6DVGZ24B3RLBNT5653CXRUEUDWF6JERO4YEX6ZS)
+[![JS SDK](https://img.shields.io/badge/JS%20SDK-v0.1.0-7C3AED)](sdks/javascript)
+[![Python SDK](https://img.shields.io/badge/Python%20SDK-v0.1.0-0F6E56)](sdks/python)
+[![CLI](https://img.shields.io/badge/CLI-v0.1.0-B9762E)](sdks/cli)
+[![Node](https://img.shields.io/badge/Node.js-18%2B-339933)](sdks/javascript)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)](sdks/python)
+
+</div>
 
 ---
 
-## What is Stellar Trust Circles?
+## What this repo contains
 
-Rotating savings groups — known as *ajo* in Nigeria, *chama* in Kenya, *tanda* in Latin America — are one of the oldest and most trusted forms of community finance. A group of people contribute a fixed amount regularly, and each cycle one member receives the full pot.
+This repository is the third pillar of the Trust Circles organisation. While the `contracts` repo holds the on-chain protocol and the `frontend` repo holds the web interface, this repo holds everything that makes the protocol accessible to developers and understandable to users:
 
-**Stellar Trust Circles** brings this model on-chain:
-
-- Members contribute USDC weekly or monthly
-- Payouts rotate automatically via Soroban smart contract
-- Every contribution and payout is transparently recorded on-chain
-- Members vote on circle rules via on-chain governance
-- On-chain reputation builds across multiple circles
-- No bank. No middleman. No missed payouts.
+- **Documentation** — architecture, integration guide, user guide, security model, FAQ, glossary, troubleshooting
+- **JavaScript/TypeScript SDK** — an installable npm package for integrating Trust Circles into any JS or TS application
+- **Python SDK** — a pip-installable package for Python backends and scripts
+- **CLI tool** — a command-line interface for interacting with deployed circles directly
+- **Code examples** — runnable TypeScript and Python snippets for every common contract interaction
 
 ---
 
-## Why Stellar?
-
-| Need | Why Stellar fits |
-|------|-----------------|
-| Cheap transactions | Fees < $0.001 — viable for $5–$50 weekly contributions |
-| Fast settlement | 3–5 second finality — payouts land instantly |
-| Stablecoin support | Native USDC on Stellar — no volatility risk for savings |
-| Smart contracts | Soroban enables trustless rotation logic on-chain |
-| Mobile-friendly | Stellar's lightweight protocol suits low-bandwidth users |
-
----
-
-## How it works
-
-1. A **circle creator** calls `create_circle()` with a member list, contribution amount, and cycle length
-2. Each **member** calls `contribute()` before the cycle deadline — USDC is escrowed in the contract
-3. At cycle end, `release_payout()` sends the full pot to the next member in rotation
-4. Missed contributions are flagged on-chain and reduce the member's reputation score
-5. After all members have received once, the circle closes or restarts
-
----
-
-## Contract functions
-
-| Function | Description |
-|----------|-------------|
-| `create_circle` | Initialise a new savings circle |
-| `contribute` | Deposit USDC for the current cycle |
-| `release_payout` | Release the pot to the next member in rotation |
-| `get_circle` | Read current circle state (free, no transaction) |
-| `get_reputation` | Read a member's on-chain reputation score |
-| `has_contributed` | Check if a member contributed in a given cycle |
-| `restart_circle` | Restart a completed circle for another rotation |
-| `vouch` | Vouch for a new member (requires reputation ≥ 50) |
-| `get_vouches` | Return how many vouches an address has received |
-| `propose` | Submit a governance proposal to change circle rules |
-| `vote` | Vote yes or no on an open proposal |
-| `execute_proposal` | Execute a proposal that has reached majority |
-| `get_proposal` | Read a proposal by ID |
-
----
-
-## Reputation system
-
-Every member has an on-chain reputation score:
-
-| Action | Change |
-|--------|--------|
-| Contribute on time | +10 points |
-| Miss a contribution | −20 points (saturates at 0) |
-
-| Score | Status |
-|-------|--------|
-| 0–49 | New member |
-| 50–99 | Building trust |
-| 100+ | Trusted |
-
----
-
-## Architecture
+## Repository Structure
 
 ```
-┌─────────────────────────────────────────────────┐
-│                 Stellar Network                 │
-│                                                 │
-│  ┌───────────────────────────────────────────┐  │
-│  │         Soroban Smart Contract            │  │
-│  │  - Circle state & member registry         │  │
-│  │  - USDC contribution escrow               │  │
-│  │  - Rotation & payout logic                │  │
-│  │  - On-chain reputation scores             │  │
-│  │  - Social vouching                        │  │
-│  │  - Governance proposals & voting          │  │
-│  └──────────────────┬────────────────────────┘  │
-│                     │ Horizon API / Soroban RPC  │
-└─────────────────────┼───────────────────────────┘
-                      │
-         ┌────────────▼────────────┐
-         │   Frontend (React)      │
-         │   github.com/Stellar-   │
-         │   trust-circles/frontend│
-         └─────────────────────────┘
-```
-
----
-
-## Deployed contracts
-
-| Network | Contract ID |
-|---------|------------|
-| Testnet | [`CANM5X47IG3AM5JDG6DVGZ24B3RLBNT5653CXRUEUDWF6JERO4YEX6ZS`](https://testnet.stellar.expert/explorer/testnet/contract/CANM5X47IG3AM5JDG6DVGZ24B3RLBNT5653CXRUEUDWF6JERO4YEX6ZS) |
-| Mainnet | Coming soon |
-
----
-
-## Repository structure
-
-```
-contracts/
-├── .github/
-│   └── workflows/
-│       └── ci.yml               # Build + test on every push
-├── contracts/
-│   └── trust_circle/
-│       ├── Cargo.toml
-│       └── src/
-│           ├── lib.rs            # Full contract logic
-│           └── test.rs           # Unit tests
-├── Cargo.toml                    # Workspace config
-├── CONTRIBUTING.md
+Stellar-trust-circles-documents/
+├── docs/
+│   ├── FAQ.md                        # Combined product, technical, and contributor FAQ
+│   └── TROUBLESHOOTING.md            # Common errors and how to resolve them
+├── examples/
+│   ├── create-circle.ts              # Full circle creation example in TypeScript
+│   ├── contribute.ts                 # Contribution example in TypeScript
+│   ├── release-payout.ts             # Payout release example in TypeScript
+│   └── python/
+│       ├── create_circle.py          # Circle creation example in Python
+│       └── contribute.py             # Contribution example in Python
+├── sdks/
+│   ├── types/                        # Shared type definitions (consumed by JS SDK)
+│   │   ├── index.ts
+│   │   └── package.json              # @stellar-trust-circles/types
+│   ├── javascript/                   # JavaScript/TypeScript SDK
+│   │   ├── src/
+│   │   │   ├── client.ts             # TrustCircleClient class
+│   │   │   ├── types.ts              # Full type definitions
+│   │   │   ├── errors.ts             # TrustCircleError + ErrorCode enum
+│   │   │   └── index.ts              # Package exports
+│   │   ├── package.json              # @stellar-trust-circles/sdk
+│   │   ├── tsconfig.json
+│   │   └── README.md
+│   ├── python/                       # Python SDK
+│   │   ├── trust_circle/
+│   │   │   ├── __init__.py           # Public API exports
+│   │   │   ├── client.py             # TrustCircleClient class
+│   │   │   ├── models.py             # Dataclass models for all contract types
+│   │   │   └── exceptions.py         # TrustCircleError + ErrorCode enum
+│   │   ├── setup.py                  # pip install stellar-trust-circles
+│   │   ├── requirements.txt
+│   │   ├── pytest.ini
+│   │   └── README.md
+│   └── cli/                          # CLI tool
+│       ├── index.ts                  # Command implementations
+│       └── package.json              # @stellar-trust-circles/cli → trust-circle binary
+├── ARCHITECTURE.md                   # System architecture and component diagram
+├── CONTRIBUTING.md                   # How to contribute to this repo
+├── CODE_OF_CONDUCT.md
+├── INTEGRATION.md                    # Developer integration guide (all 13 functions)
 ├── LICENSE
-└── README.md
+├── README.md                         # This file
+├── SECURITY.md                       # Security policy and vulnerability disclosure
+├── TRUST_SECURITY.md                 # Plain-language trust model for end users
+├── USER_GUIDE.md                     # Plain-language guide for circle members
+└── glossary.md                       # Definitions for every term used across docs
 ```
 
 ---
 
-## Getting started
+## Documentation
 
-### Prerequisites
+### For users (no blockchain experience required)
 
-- Rust v1.84.0 or higher
-- Stellar CLI v26.0.0+
-- WASM build target
+| Document | Description |
+|----------|-------------|
+| [USER_GUIDE.md](USER_GUIDE.md) | What rotating savings groups are, how to join and contribute, how payouts work, what happens if you miss, and how reputation works — written for someone who has never used a blockchain app |
+| [TRUST_SECURITY.md](TRUST_SECURITY.md) | What the smart contract guarantees and what it doesn't, wallet security, audit status, and what to do if something seems wrong |
+| [docs/FAQ.md](docs/FAQ.md) | Answers to the most common questions from users, developers, and contributors |
+| [glossary.md](glossary.md) | Plain-language definitions of every term used across all Trust Circles documentation |
 
-### Install Stellar CLI
+### For developers
+
+| Document | Description |
+|----------|-------------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Full system architecture — how the three repos connect, the contract↔frontend data flow, USDC addresses by network, and security considerations |
+| [INTEGRATION.md](INTEGRATION.md) | Complete developer guide for calling the contract from any application — every function's parameters, expected behavior, events emitted, and error messages |
+| [SECURITY.md](SECURITY.md) | Private vulnerability disclosure process, scope, and audit status |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common errors during development and deployment, with exact solutions |
+
+---
+
+## JavaScript / TypeScript SDK
+
+**Package:** `@stellar-trust-circles/sdk`
+**Location:** `sdks/javascript/`
+**Node.js:** 18+
+**Dependency:** `@stellar/stellar-sdk` v12
+
+The JavaScript SDK provides a typed `TrustCircleClient` class that wraps all 13 contract functions. It supports Testnet, Mainnet, and local Standalone network out of the box.
+
+### Installation
 
 ```bash
-curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh -s -- --install-deps
+npm install @stellar-trust-circles/sdk
+# or
+yarn add @stellar-trust-circles/sdk
 ```
 
-### Add the WASM target
+### Quick start
 
-```bash
-rustup target add wasm32v1-none
+```typescript
+import { TrustCircleClient } from '@stellar-trust-circles/sdk';
+
+const client = new TrustCircleClient({
+  network: 'testnet',
+  contractId: 'CANM5X47IG3AM5JDG6DVGZ24B3RLBNT5653CXRUEUDWF6JERO4YEX6ZS',
+});
+
+// Read circle state — free, no transaction
+const circle = await client.getCircle({ contractId: '...' });
+console.log(circle.name, circle.currentCycle, circle.isActive);
+
+// Create a circle
+await client.createCircle({
+  members: ['GABC...', 'GXYZ...'],
+  contributionAmount: 100_000_000,  // 10 USDC in stroops
+  cycleLength: 604800,              // 1 week in seconds
+});
 ```
 
-### Configure Testnet
+### Available methods
 
-```bash
-stellar network add \
-  --rpc-url https://soroban-testnet.stellar.org:443 \
-  --network-passphrase "Test SDF Network ; September 2015" \
-  testnet
+| Method | Type | Contract function |
+|--------|------|------------------|
+| `createCircle(params)` | Write | `create_circle` |
+| `contribute(params)` | Write | `contribute` |
+| `releasePayout(params)` | Write | `release_payout` |
+| `restartCircle(params)` | Write | `restart_circle` |
+| `vouch(params)` | Write | `vouch` |
+| `propose(params)` | Write | `propose` |
+| `vote(params)` | Write | `vote` |
+| `executeProposal(params)` | Write | `execute_proposal` |
+| `getCircle(params)` | Read | `get_circle` |
+| `getReputation(params)` | Read | `get_reputation` |
+| `hasContributed(params)` | Read | `has_contributed` |
+| `getVouches(params)` | Read | `get_vouches` |
+| `getProposal(params)` | Read | `get_proposal` |
+
+### Error handling
+
+```typescript
+import { TrustCircleError, ErrorCode } from '@stellar-trust-circles/sdk';
+
+try {
+  await client.contribute({ member: address });
+} catch (err) {
+  if (err instanceof TrustCircleError) {
+    switch (err.code) {
+      case ErrorCode.ALREADY_CONTRIBUTED:
+        // handle
+      case ErrorCode.DEADLINE_PASSED:
+        // handle
+    }
+  }
+}
 ```
 
-### Generate and fund a keypair
+### Network configurations
 
-```bash
-stellar keys generate alice --network testnet
-curl "https://friendbot.stellar.org?addr=$(stellar keys address alice)"
+```typescript
+// Testnet (default for development)
+new TrustCircleClient({ network: 'testnet', contractId: '...' });
+
+// Mainnet (requires completed audit)
+new TrustCircleClient({ network: 'mainnet', contractId: '...' });
+
+// Local standalone (for development against a local node)
+new TrustCircleClient({
+  network: 'standalone',
+  contractId: '...',
+  rpcUrl: 'http://localhost:8000/soroban/rpc',
+});
 ```
 
-### Clone and build
+See [sdks/javascript/README.md](sdks/javascript/README.md) for full SDK documentation.
+
+---
+
+## Python SDK
+
+**Package:** `stellar-trust-circles`
+**Location:** `sdks/python/`
+**Python:** 3.10+
+**Dependency:** `stellar-sdk` 7.0+
+
+The Python SDK provides a `TrustCircleClient` class with the same contract coverage as the JavaScript SDK, implemented as straightforward synchronous methods with dataclass return types.
+
+### Installation
 
 ```bash
-git clone https://github.com/Stellar-trust-circles/contracts
-cd contracts
-stellar contract build
+pip install stellar-trust-circles
 ```
 
-### Run tests
+### Quick start
 
-```bash
-cargo test
+```python
+from trust_circle import TrustCircleClient
+
+client = TrustCircleClient(
+    network="testnet",
+    contract_id="CANM5X47IG3AM5JDG6DVGZ24B3RLBNT5653CXRUEUDWF6JERO4YEX6ZS",
+)
+
+# Read circle state
+circle = client.get_circle()
+print(circle.name, circle.current_cycle, circle.is_active)
+
+# Create a circle
+circle_id = client.create_circle(
+    members=["GABC...", "GXYZ..."],
+    contribution_amount=100_000_000,  # 10 USDC in stroops
+    cycle_length=604800,              # 1 week
+)
+
+# Get reputation for an address
+reputation = client.get_reputation(member="GABC...")
+print(reputation.score, reputation.tier)  # e.g. 50, ReputationTier.BUILDING_TRUST
 ```
 
-### Deploy to Testnet
+### Models
 
-```bash
-stellar contract deploy \
-  --wasm target/wasm32v1-none/release/trust_circle.wasm \
-  --source alice \
-  --network testnet \
-  --alias trust_circle
+The Python SDK returns typed dataclass instances:
+
+```python
+@dataclass
+class Circle:
+    name: str
+    admin: str
+    usdc_token: str
+    contribution_amount: int
+    members: list[str]
+    current_cycle: int
+    payout_index: int
+    cycle_deadline: int
+    cycle_length_secs: int
+    is_active: bool
+
+@dataclass
+class Reputation:
+    score: int
+    tier: ReputationTier   # NEW_MEMBER | BUILDING_TRUST | TRUSTED
+
+@dataclass
+class Proposal:
+    id: int
+    proposer: str
+    proposal_type: ProposalType
+    votes_yes: int
+    votes_no: int
+    voters: list[str]
+    executed: bool
 ```
 
-### Invoke a function
+### Error handling
+
+```python
+from trust_circle.exceptions import TrustCircleError, ErrorCode
+
+try:
+    client.contribute(member=address)
+except TrustCircleError as e:
+    if e.code == ErrorCode.ALREADY_CONTRIBUTED:
+        print("Already contributed this cycle")
+    elif e.code == ErrorCode.DEADLINE_PASSED:
+        print("Contribution deadline has passed")
+```
+
+See [sdks/python/README.md](sdks/python/README.md) for full SDK documentation.
+
+---
+
+## CLI Tool
+
+**Package:** `@stellar-trust-circles/cli`
+**Binary:** `trust-circle`
+**Location:** `sdks/cli/`
+
+A command-line interface for interacting with deployed Trust Circle contracts directly from the terminal. Useful for testing, debugging, and scripting.
+
+### Installation
 
 ```bash
-stellar contract invoke \
-  --id trust_circle \
-  --source alice \
-  --network testnet \
-  -- \
-  get_circle
+npm install -g @stellar-trust-circles/cli
+```
+
+### Commands
+
+```bash
+# Circle management
+trust-circle create  --name "Lagos Squad" --members addr1,addr2 --amount 10 --cycle weekly
+trust-circle status  --circle <CONTRACT_ID>
+trust-circle contribute --circle <CONTRACT_ID>
+trust-circle payout  --circle <CONTRACT_ID>
+
+# Reputation
+trust-circle rep     --circle <CONTRACT_ID> --address <STELLAR_ADDRESS>
+trust-circle vouch   --circle <CONTRACT_ID> --for <STELLAR_ADDRESS>
+
+# Governance
+trust-circle propose --circle <CONTRACT_ID> --type change_amount --value 20
+trust-circle vote    --circle <CONTRACT_ID> --proposal 0 --yes
+trust-circle execute --circle <CONTRACT_ID> --proposal 0
+```
+
+### Environment
+
+```bash
+export STELLAR_SECRET_KEY=SXXX...
+export CONTRACT_ID=CXXX...
+export STELLAR_NETWORK=testnet
 ```
 
 ---
 
-## Roadmap
+## Code Examples
 
-- [x] Core contract: create circle, contribute, rotate payout
-- [x] On-chain contribution history and reputation scores
-- [x] Testnet deployment
-- [x] GitHub Actions CI
-- [ ] Social vouching system
-- [ ] On-chain governance voting
-- [ ] Mainnet deployment
-- [ ] Cross-circle reputation aggregation
-- [ ] Circle discovery marketplace
+`examples/` contains runnable code for the most common integration patterns.
+
+| File | Language | What it demonstrates |
+|------|----------|---------------------|
+| `create-circle.ts` | TypeScript | Create a circle with multiple members, print the result |
+| `contribute.ts` | TypeScript | Connect a keypair and submit a contribution |
+| `release-payout.ts` | TypeScript | Release payout as admin and read updated state |
+| `python/create_circle.py` | Python | Same circle creation flow using the Python SDK |
+| `python/contribute.py` | Python | Same contribution flow using the Python SDK |
+
+All examples use Testnet and read the contract ID and secret key from environment variables. No real funds are involved.
+
+### Running the TypeScript examples
+
+```bash
+cd examples
+npm install
+STELLAR_SECRET_KEY=SXXX... CONTRACT_ID=CXXX... npx ts-node create-circle.ts
+```
+
+### Running the Python examples
+
+```bash
+cd examples/python
+pip install stellar-trust-circles
+STELLAR_SECRET_KEY=SXXX... CONTRACT_ID=CXXX... python create_circle.py
+```
 
 ---
 
-## Organisation repositories
+## The Maintenance Rule
+
+This is the most important rule in this repository: **documentation must stay synchronized with the contract.**
+
+Any pull request to `STC-smart-contracts` that adds, changes, or removes a public function must update `INTEGRATION.md` in the same release cycle. Any pull request that changes a function's error messages must update `docs/TROUBLESHOOTING.md`. Any new term introduced anywhere must be added to `glossary.md`.
+
+If you notice documentation that has drifted out of sync with the actual contract, opening an issue here is a valid and welcome contribution even if you didn't write the original code change.
+
+---
+
+## USDC Addresses
+
+| Network | USDC Asset Issuer |
+|---------|------------------|
+| Testnet | `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5` |
+| Mainnet | `GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN` |
+
+---
+
+## Organisation Repositories
 
 | Repo | Description |
 |------|-------------|
-| [contracts](https://github.com/Stellar-trust-circles/STC-smart-contracts) | This repo — Soroban smart contracts |
-| [frontend](https://github.com/Stellar-trust-circles/Stellar-trust-circles-frontend) | React web interface |
-| [documents](https://github.com/Stellar-trust-circles/Stellar-trust-circles-documents) | Integration guide, user guide, architecture |
+| [STC-smart-contracts](https://github.com/Stellar-trust-circles/STC-smart-contracts) | Soroban contracts — Rust |
+| [frontend](https://github.com/Stellar-trust-circles/frontend) | React + TypeScript web interface |
+| **documents** (this repo) | Documentation, SDKs, CLI, and examples |
 
 ---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to get set up locally and pick up an open issue.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines specific to this repository — tone rules for user-facing documents, the maintenance rule, the style guide for integration docs, and the review checklist for documentation PRs.
 
-Issues tagged [`good first issue`](../../issues?q=label%3A%22good+first+issue%22) are a great place to start.
+Issues tagged [`good first issue`](../../issues?q=label%3A%22good+first+issue%22) include things like adding a new code example, translating a section of `USER_GUIDE.md`, or writing a test for one of the SDK methods.
 
 ---
 
 ## License
 
 MIT — see [LICENSE](LICENSE)
-
